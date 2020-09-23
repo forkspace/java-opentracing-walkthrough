@@ -9,6 +9,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import io.opentracing.util.GlobalTracer;
 import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -25,6 +26,8 @@ public class KitchenContextHandler extends ServletContextHandler
     {
         setContextPath("/kitchen");
         registerServlets();
+        TracingFilter tracingFilter = new TracingFilter(GlobalTracer.get());
+        addFilter(new FilterHolder(tracingFilter), "/*", EnumSet.allOf(DispatcherType.class));
     }
 
     void registerServlets()

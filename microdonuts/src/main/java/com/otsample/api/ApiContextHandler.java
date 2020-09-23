@@ -14,6 +14,8 @@ import javax.servlet.http.HttpServletResponse;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import io.opentracing.Span;
+import io.opentracing.util.GlobalTracer;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 
@@ -51,6 +53,9 @@ public class ApiContextHandler extends ServletContextHandler
         public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException
         {
+            Span orderSpan = GlobalTracer.get().buildSpan("order_span").start();
+            request.setAttribute("span", orderSpan);
+
             DonutRequest[] donutsInfo = parseDonutsInfo(request);
             if (donutsInfo == null) {
                 Utils.writeErrorResponse(response);
@@ -73,6 +78,7 @@ public class ApiContextHandler extends ServletContextHandler
             }
 
             Utils.writeJSON(response, statusRes);
+            orderSpan.finish();
         }
 
         static DonutRequest[] parseDonutsInfo(HttpServletRequest request)
